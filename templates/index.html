@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:py="http://genshi.edgewall.org/">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Mail Throttler</title>
+    <link href="default.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div id="header">
+      <h1>Mail Throttler</h1>
+      <h2>Admin Console</h2>
+    </div>
+    <div id="menu">
+      <ul>
+	<li><a href="#">Home</a></li>
+	<li><a href="#">Contact Us</a></li>
+      </ul>
+    </div>
+    <div id="content">
+      <div id="left">
+	<h2>Current Stats</h2>
+	<ul>
+	  <li>Currently counting ${currentCount} messages</li>
+	  <li>Seen a total of ${totalCount} messages</li>
+	</ul>
+	<h2>Actions</h2>
+      </div>
+      <div id="right">
+	<h2>Current Log</h2>
+	<p py:for="txt, logitem in log"><strong>${logitem.asctime}</strong> - ${logitem.name} - ${logitem.levelname} - ${logitem.message}</p>
+      </div>
+    </div>
+    <div id="footer">
+      <p>Copyright &copy; 2009 Andrew Cox. Designed by <a href="http://www.freecsstemplates.org" class="link1">Free CSS Templates</a></p>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+* Mail Server Spec
+** Idea
+   is that there is a mail server that we will use as the error repository
+   Is this a good idea, maybe not, but every seems to be able to talk SMTP now
+   So all your errors get sent to our good friend the email throttler, and then it does crap with them!
+   Still sending them over the wire (but you would anyway well maybe)
+** 
+ 
+
+
