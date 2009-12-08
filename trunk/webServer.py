@@ -31,9 +31,15 @@ class AdminPage(resource.Resource):
         logging.getLogger("").addHandler(self.log)
 
 
-    def render(self, request):
+    def render_GET(self, request):
         tmpl = loader.load('index.html')
-        stream = tmpl.generate(log=self.log.currentLog, currentCount=self.counter.count, totalCount=self.counter.totalCount)
+        stream = tmpl.generate(log=self.log.currentLog, currentCount=self.counter.count, totalCount=self.counter.totalCount, currentLevel=logging.getLevelName(self.log.level))
+        return stream.render('html', doctype='html')
+
+    def render_POST(self, request):
+        tmpl = loader.load('index.html') 
+        self.log.setLevel( getattr(logging, str(request.args["logLevel"][0]).upper()) );
+        stream = tmpl.generate(log=self.log.currentLog, currentCount=self.counter.count, totalCount=self.counter.totalCount, currentLevel=logging.getLevelName(self.log.level))
         return stream.render('html', doctype='html')
 
 def createSite(counter):

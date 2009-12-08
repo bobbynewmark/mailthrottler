@@ -12,7 +12,7 @@
     </div>
     <div id="menu">
       <ul>
-	<li><a href="#">Home</a></li>
+	<li><a href="/">Home</a></li>
 	<li><a href="#">Contact Us</a></li>
       </ul>
     </div>
@@ -24,10 +24,24 @@
 	  <li>Seen a total of ${totalCount} messages</li>
 	</ul>
 	<h2>Actions</h2>
+	<ul>
+	  <li>
+	    <form action="/" method="post">
+	      <div>Change Logging level to: 
+	      <select name="logLevel">
+		<option>DEBUG</option>
+		<option>INFO</option>
+	      </select>
+	      <input type="submit" value="Change" />
+	      </div>
+	    </form>
+	  </li>
+	</ul>
+
       </div>
       <div id="right">
-	<h2>Current Log</h2>
-	<p py:for="txt, logitem in log"><strong>${logitem.asctime}</strong> - ${logitem.name} - ${logitem.levelname} - ${logitem.message}</p>
+	<h2>Current Log - ${currentLevel}</h2>
+	<p class="logitem" py:for="txt, logitem in log"><strong>${logitem.asctime}</strong> - ${logitem.name} - ${logitem.levelname} - ${logitem.message}</p>
       </div>
     </div>
     <div id="footer">
