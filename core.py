@@ -54,6 +54,10 @@ class RollingMemoryHandler(logging.Handler):
             self.currentLog.pop()
         self.currentLog.insert(0, (self.format(record), record))
 
+    def setLevel(self, lvl):
+        logging.Handler.setLevel(self, lvl)
+        self.currentLog = [record for record in self.currentLog if record[1].levelno >= lvl]
+
 def loggerSetup():
     #Sets up the Root Logger
     logger = logging.getLogger("")
