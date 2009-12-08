@@ -57,12 +57,12 @@ class BaseMessage(object):
 
 class PrintMessage(BaseMessage):
     def standardProcess(self, d):
-        self.logger.info("WOOP! msg %s" , self.counter.count)
-        d.callback("WOOP")
+        self.logger.info("recieved into standard process msg %s" , self.counter.count)
+        d.callback("standardProcess")
     
     def excessProcess(self, d):
-        self.logger.info("NO WOOP DEFINATE SUCK msg %s" , self.counter.count)
-        d.callback("NO WOOP")
+        self.logger.info("recieved into excess process msg %s" , self.counter.count)
+        d.callback("execessProcess")
 
 class SaveMessage(BaseMessage):
 
@@ -101,7 +101,7 @@ class LocalDelivery(object):
 
     def validateTo(self, user):
         self.logger.debug("validateTo: %s", user)
-        return lambda: SaveMessage(self.counter)
+        return lambda: PrintMessage(self.counter)
 
     def validateFrom(self, helo, orginAddress):
         self.logger.debug("validateFrom: helo:%s orginAddress:%s", helo, orginAddress)
