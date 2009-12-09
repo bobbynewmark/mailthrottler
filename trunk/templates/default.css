@@ -110,6 +110,12 @@ a:hover {
     margin-bottom:1px;
 }
 
+#logbox
+{
+    height:300px;
+    width:100%
+}
+
 /** FOOTER */
 
 #footer {
