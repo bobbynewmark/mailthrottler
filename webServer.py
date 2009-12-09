@@ -21,15 +21,10 @@ loader = TemplateLoader(
 class AdminPage(resource.Resource):
     isLeaf = 1
 
-    def __init__(self, counter):
+    def __init__(self, counter, log):
         resource.Resource.__init__(self)
         self.counter = counter
-        self.log = RollingMemoryHandler()
-        self.log.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        self.log.setFormatter(formatter)
-        logging.getLogger("").addHandler(self.log)
-
+        self.log = log
 
     def render_GET(self, request):
         tmpl = loader.load('index.html')
@@ -53,10 +48,36 @@ class ConfigPage(resource.Resource):
         stream = tmpl.generate(config=_config)
         return stream.render('html', doctype='html')
 
+class Ajax(resource.Resource):
+    isLeaf = 1
+
+    def __init__(self, log):
+        resource.Resource.__init__(self)
+        self.log = log
+    
+    def render_GET(self, request):
+        retval = '{log : ['
+        
+        items = []
+        for txt, logitem in self.log.currentLog:
+            items.append('{asctime:"%s", name : "%s", levelname: "%s", message: "%s"}' % (logitem.asctime, logitem.name, logitem.levelname, logitem.message) )
+
+        retval += ",".join(items)
+        retval += ']}'
+        
+        return retval #'{log : [ {asctime:"abc", name : "def", levelname: "ghi", message: "jkl"} ]}'
+
 def createSite(counter):
+    log = RollingMemoryHandler()
+    log.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    log.setFormatter(formatter)
+    logging.getLogger("").addHandler(log)
     root = resource.Resource()
-    root.putChild('', AdminPage(counter))
+    root.putChild('', AdminPage(counter, log))
+    root.putChild('ajax', Ajax(log))
     root.putChild('config', ConfigPage())
     root.putChild('default.css', static.File('templates/default.css'))
+    root.putChild('jquery-1.3.2.min.js', static.File('templates/jquery-1.3.2.min.js'))
     return server.Site(root)
     
