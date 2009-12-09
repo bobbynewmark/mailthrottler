@@ -9,9 +9,8 @@ from core import _config , BaseMessageCounter, RollingMemoryHandler, loggerSetup
 import webServer 
 
 #Python BulitIns
-import os, time, logging
+import os, time, logging, uuid
 from email.Header import Header
-import tempfile
 
 #External Modules
 from twisted.mail import smtp, maildir
@@ -23,12 +22,12 @@ class BaseMessage(object):
     implements(smtp.IMessage)
 
     defaultValues = {}
+    _config.importDefaults("BaseMessage", defaultValues)
 
     def __init__(self, counter):
         self.logger = logging.getLogger("BaseMessage")
         self.lines = []
-        self.counter = counter
-        _config.importDefaults("BaseMessage", self.__class__.defaultValues)
+        self.counter = counter        
                     
     def lineReceived(self, line):
         self.logger.debug("lineRecieved")
@@ -67,16 +66,18 @@ class PrintMessage(BaseMessage):
 class SaveMessage(BaseMessage):
 
     defaultValues = {"saveFilePath": "maildrop" }
+    _config.importDefaults("SaveMessage", defaultValues)
 
     def __init__(self, counter):
         BaseMessage.__init__(self,counter)
-        _config.importDefaults("SaveMessage", self.__class__.defaultValues)
+        
 
     def standardProcess(self, d):
-        dirpath = _config.get("SaveMessage", "saveFilePath")
-        f = tempfile.NamedTemporaryFile(mode="w",dir=dirpath, delete=False)
-        f.write( "\r\n".join(self.lines) )
+        filepath = os.path.join(_config.get("SaveMessage", "saveFilePath"), str(uuid.uuid4()) + ".msg" )
+        f = open(filepath, "w")
+        f.write( "\n".join(self.lines) )
         f.close()
+        self.logger.info("Saved Message as %s" , filepath)
         d.callback("File Saved")
 
     def excessProcess(self, d):
@@ -86,9 +87,9 @@ class LocalDelivery(object):
     implements(smtp.IMessageDelivery)
 
     defaultValues = {"clearAfter": "1.0" }
+    _config.importDefaults("LocalDelivery", defaultValues)
 
     def __init__(self, counter):
-        _config.importDefaults("LocalDelivery", self.__class__.defaultValues)
         self.logger = logging.getLogger("LocalDelivery")
         self.counter = counter
         self.clearCall = task.LoopingCall(self.counter.clearCount)
@@ -98,13 +99,14 @@ class LocalDelivery(object):
         myHostname, clientIP = helo
         headerValue = "by %s from %s with ESMTP; %s" % (
             myHostname, clientIP, smtp.rfc822date())
-        retval = "Recieved: %s" % Header(headerValue)
+        #retval = "Recieved: %s" % Header(headerValue)
+        retval = ""
         self.logger.debug("receivedHeader: helo:%s orgin:%s recipents:%s", helo, orgin, [r.dest for r in recipents] )
         return retval
 
     def validateTo(self, user):
         self.logger.debug("validateTo: %s", user)
-        return lambda: PrintMessage(self.counter)
+        return lambda: SaveMessage(self.counter)
 
     def validateFrom(self, helo, orginAddress):
         self.logger.debug("validateFrom: helo:%s orginAddress:%s", helo, orginAddress)

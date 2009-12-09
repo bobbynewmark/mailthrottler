@@ -14,7 +14,7 @@ class Config(ConfigParser.SafeConfigParser):
 
     def __init__(self):
         ConfigParser.SafeConfigParser.__init__(self)
-        self.optionxform = str
+        self.optionxform = str #This is so we don't loose case on the key names
     
     def importDefaults(self, sectionName, configDefaults ):
         for key in configDefaults.keys():
@@ -31,12 +31,12 @@ class BaseMessageCounter(object):
     """
 
     defaultValues = {"excessAmount": "20"}
+    _config.importDefaults("BaseMessageCounter", defaultValues)
 
     def __init__(self):
         self.logger = logging.getLogger("BaseMessageCounter")
         self.count = 0
         self.totalCount = 0  
-        _config.importDefaults("BaseMessageCounter", self.__class__.defaultValues)
 
     def incrementCount(self, message):
         self.count += 1
@@ -52,10 +52,10 @@ class BaseMessageCounter(object):
 class RollingMemoryHandler(logging.Handler):
 
     defaultValues = {"logSize": "20"}
+    _config.importDefaults("RollingMemoryHandler", defaultValues)
 
     def __init__(self):
-        logging.Handler.__init__(self)
-        _config.importDefaults("RollingMemoryHandler", self.__class__.defaultValues)
+        logging.Handler.__init__(self)        
         self.currentLog = []
         self.logSize = _config.getint("RollingMemoryHandler", "logSize")
     
