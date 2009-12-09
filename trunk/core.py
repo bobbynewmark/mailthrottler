@@ -7,14 +7,21 @@ These are common classes and functions to the whole project
 #Internal Modules
 
 #Python BulitIns
-import logging
+import logging, ConfigParser
 #External Modules
 
-class Config(dict):
+class Config(ConfigParser.SafeConfigParser):
+
+    def __init__(self):
+        ConfigParser.SafeConfigParser.__init__(self)
+        self.optionxform = str
     
-    def importDefaults(self, configDefaults ):
+    def importDefaults(self, sectionName, configDefaults ):
         for key in configDefaults.keys():
-            self.setdefault( key , configDefaults[key] )
+            if not self.has_section(sectionName):
+                self.add_section(sectionName)
+            if not self.has_option(sectionName, key):
+                self.set( sectionName, key , configDefaults[key] )
 
 _config = Config()
 
@@ -23,13 +30,13 @@ class BaseMessageCounter(object):
     TODO: Check for thread safety, may have to return defereds if need to lock / unlock resource
     """
 
-    defaultValues = {"excessAmount": 20}
+    defaultValues = {"excessAmount": "20"}
 
     def __init__(self):
         self.logger = logging.getLogger("BaseMessageCounter")
         self.count = 0
-        self.totalCount = 0        
-        _config.importDefaults(self.__class__.defaultValues)
+        self.totalCount = 0  
+        _config.importDefaults("BaseMessageCounter", self.__class__.defaultValues)
 
     def incrementCount(self, message):
         self.count += 1
@@ -40,13 +47,17 @@ class BaseMessageCounter(object):
         self.logger.debug( "Clearing count (totalCount:%s)" ,self.totalCount )
 
     def reachedExcessAmount(self, message):
-        return self.count > _config["excessAmount"]
+        return self.count > _config.getint("BaseMessageCounter", "excessAmount")
     
 class RollingMemoryHandler(logging.Handler):
+
+    defaultValues = {"logSize": "20"}
+
     def __init__(self):
         logging.Handler.__init__(self)
+        _config.importDefaults("RollingMemoryHandler", self.__class__.defaultValues)
         self.currentLog = []
-        self.logSize = 20
+        self.logSize = _config.getint("RollingMemoryHandler", "logSize")
     
     def emit(self,record):
         #have to apply the format to the text of the log or something!
@@ -67,4 +78,10 @@ def loggerSetup():
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+
+def loadConfig(filename):
+    _config.readfp(open(filename))
+   
+
+
 
