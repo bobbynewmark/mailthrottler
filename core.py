@@ -7,7 +7,7 @@ These are common classes and functions to the whole project
 #Internal Modules
 
 #Python BulitIns
-import logging, ConfigParser
+import logging, ConfigParser, collections
 #External Modules
 
 class Config(ConfigParser.SafeConfigParser):
@@ -48,6 +48,44 @@ class BaseMessageCounter(object):
 
     def reachedExcessAmount(self, message):
         return self.count > _config.getint("BaseMessageCounter", "excessAmount")
+
+    def getCounts(self):
+        """Returns a dictionary of counts from the counter. 
+        Override to provide more than just the total and current (which should always be there)"""
+        return { "total" : self.totalCount, "current": self.count }
+
+class QueueMessageCounter(BaseMessageCounter):
+    """Creates counts based on the FROM address of the message.
+    Keeps these in a dictionary which it clears on clear count
+    """
+
+    defaultValues = {}
+    _config.importDefaults("QueueMessageCounter", defaultValues)
+
+    def __init__(self):
+        BaseMessageCounter.__init__(self)
+        self.logger = logging.getLogger("QueueMessageCounter")
+        self.queues = collections.defaultdict(int)
+
+    def incrementCount(self, message):
+        BaseMessageCounter.incrementCount(self, message) #increment the totals and a running count as be base class
+        self.queues[message.FROM] += 1
+
+    def clearCount(self):
+        BaseMessageCounter.clearCount(self)
+        for fromaddr in self.queues.keys():
+            self.logger.debug( "Clearing count for queue %s (totalCount:%s)" , fromaddr , self.totalCount )
+            self.queues[fromaddr] = 0
+
+    def reachedExcessAmount(self, message):
+        return self.queues[message.FROM] > _config.getint("BaseMessageCounter", "excessAmount")
+
+    def getCounts(self):
+        """Returns the counts of the queues"""
+        retval = BaseMessageCounter.getCounts(self)
+        retval.update( self.queues  )
+        return retval
+
     
 class RollingMemoryHandler(logging.Handler):
 

@@ -27,14 +27,18 @@ class BaseMessage(object):
     def __init__(self, counter):
         self.logger = logging.getLogger("BaseMessage")
         self.lines = []
+        self.FROM = ""
         self.counter = counter        
                     
     def lineReceived(self, line):
         self.logger.debug("lineRecieved")
+        if line.lower().startswith("from:"):
+            self.FROM = line.lower().replace("from:", "").strip()
         self.lines.append(line)
 
     def eomReceived(self):
-        self.logger.debug("eomReceived")        
+        self.logger.debug("eomReceived")  
+        self.logger.debug("self.FROM=%s" % self.FROM)  
         self.counter.incrementCount(self)
         self.lines.append("")
         d = defer.Deferred()
@@ -53,6 +57,7 @@ class BaseMessage(object):
     def connectionLost(self):
         self.logger.debug("connectionLost")
         del(self.lines)
+        self.FROM = ""
 
 class PrintMessage(BaseMessage):
     def standardProcess(self, d):
@@ -69,8 +74,7 @@ class SaveMessage(BaseMessage):
     _config.importDefaults("SaveMessage", defaultValues)
 
     def __init__(self, counter):
-        BaseMessage.__init__(self,counter)
-        
+        BaseMessage.__init__(self,counter)        
 
     def standardProcess(self, d):
         filepath = os.path.join(_config.get("SaveMessage", "saveFilePath"), str(uuid.uuid4()) + ".msg" )
@@ -99,8 +103,8 @@ class LocalDelivery(object):
         myHostname, clientIP = helo
         headerValue = "by %s from %s with ESMTP; %s" % (
             myHostname, clientIP, smtp.rfc822date())
-        #retval = "Recieved: %s" % Header(headerValue)
-        retval = ""
+        retval = "Recieved: %s" % Header(headerValue)
+        #retval = ""
         self.logger.debug("receivedHeader: helo:%s orgin:%s recipents:%s", helo, orgin, [r.dest for r in recipents] )
         return retval
 
