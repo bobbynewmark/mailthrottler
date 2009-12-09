@@ -28,7 +28,7 @@ class BaseMessage(object):
         self.logger = logging.getLogger("BaseMessage")
         self.lines = []
         self.counter = counter
-        _config.importDefaults(self.__class__.defaultValues)
+        _config.importDefaults("BaseMessage", self.__class__.defaultValues)
                     
     def lineReceived(self, line):
         self.logger.debug("lineRecieved")
@@ -70,10 +70,11 @@ class SaveMessage(BaseMessage):
 
     def __init__(self, counter):
         BaseMessage.__init__(self,counter)
-        _config.importDefaults(self.__class__.defaultValues)
+        _config.importDefaults("SaveMessage", self.__class__.defaultValues)
 
     def standardProcess(self, d):
-        f = tempfile.NamedTemporaryFile(mode="w",dir=_config["saveFilePath"], delete=False)
+        dirpath = _config.get("SaveMessage", "saveFilePath")
+        f = tempfile.NamedTemporaryFile(mode="w",dir=dirpath, delete=False)
         f.write( "\r\n".join(self.lines) )
         f.close()
         d.callback("File Saved")
@@ -84,12 +85,14 @@ class SaveMessage(BaseMessage):
 class LocalDelivery(object): 
     implements(smtp.IMessageDelivery)
 
-    def __init__(self, counter, clearAfter=1.0):
+    defaultValues = {"clearAfter": "1.0" }
+
+    def __init__(self, counter):
+        _config.importDefaults("LocalDelivery", self.__class__.defaultValues)
         self.logger = logging.getLogger("LocalDelivery")
-        #TODO: Should this happen here or somewhere else?
         self.counter = counter
         self.clearCall = task.LoopingCall(self.counter.clearCount)
-        self.clearCall.start(clearAfter) # call every second TODO: Config
+        self.clearCall.start(_config.getfloat("LocalDelivery","clearAfter"))
 
     def receivedHeader(self, helo, orgin, recipents):
         myHostname, clientIP = helo

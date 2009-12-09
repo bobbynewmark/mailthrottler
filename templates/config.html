@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:py="http://genshi.edgewall.org/">
   <head>
@@ -8,7 +9,7 @@
   <body>
     <div id="header">
       <h1>Mail Throttler</h1>
-      <h2>Admin Console</h2>
+      <h2>View Config</h2>
     </div>
     <div id="menu">
       <ul>
@@ -18,31 +19,14 @@
     </div>
     <div id="content">
       <div id="left">
-	<h2>Current Stats</h2>
-	<ul>
-	  <li>Currently counting ${currentCount} messages</li>
-	  <li>Seen a total of ${totalCount} messages</li>
-	</ul>
-	<h2>Actions</h2>
-	<ul>
-	  <li>
-	    <form action="/" method="post">
-	      <div>Change Logging level to: 
-	      <select name="logLevel">
-		<option>DEBUG</option>
-		<option>INFO</option>
-	      </select>
-	      <input type="submit" value="Change" />
-	      </div>
-	    </form>
-	  </li>
-	  <li><a href="/config">View Current Config</a></li>
-	</ul>
-
+	<p class="configitem" py:for="section in config.sections()">
+	  <strong>${section}</strong> 
+	  <ul>
+	    <li py:for="item in config.items(section)">${item[0]}:${item[1]}</li>
+	  </ul>
+	</p>
       </div>
       <div id="right">
-	<h2>Current Log - ${currentLevel}</h2>
-	<p class="logitem" py:for="txt, logitem in log"><strong>${logitem.asctime}</strong> - ${logitem.name} - ${logitem.levelname} - ${logitem.message}</p>
       </div>
     </div>
     <div id="footer">
