@@ -1,9 +1,9 @@
 #!/usr/local/bin/python
-import smtplib, time, threading
+import smtplib, time, threading, sys
 from email.mime.text import MIMEText
 
-fromaddr = "fromaddr@localhost"
-toaddr = "toaddr@localhost"
+fromaddr = sys.argv[0]
+toaddr = sys.argv[1]
 
 
 def createMessage(fromaddr, toaddr, subject, msgtxt):

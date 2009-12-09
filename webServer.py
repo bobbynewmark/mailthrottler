@@ -14,7 +14,7 @@ from genshi.template import TemplateLoader
 
 #Set up template loader
 loader = TemplateLoader(
-    os.path.join(os.path.dirname(__file__), 'templates'),
+    os.path.join(os.path.dirname(__file__), 'templates'), #TODO: Config?
     auto_reload=True
 )
  
