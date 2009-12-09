@@ -2,8 +2,8 @@
 import smtplib, time, threading, sys
 from email.mime.text import MIMEText
 
-fromaddr = sys.argv[0]
-toaddr = sys.argv[1]
+fromaddr = sys.argv[1]
+toaddr = sys.argv[2]
 
 
 def createMessage(fromaddr, toaddr, subject, msgtxt):
