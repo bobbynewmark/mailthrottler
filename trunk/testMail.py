@@ -1,8 +1,8 @@
 #!/usr/local/bin/python
-import smtplib, time, threading, sys
+import smtplib, time, threading, sys, random
 from email.mime.text import MIMEText
 
-fromaddr = sys.argv[1]
+fromaddr = sys.argv[1].split(",")
 toaddr = sys.argv[2]
 
 
@@ -16,7 +16,8 @@ def createMessage(fromaddr, toaddr, subject, msgtxt):
 def sendMails(threadId):
     server = smtplib.SMTP('localhost', 8001)
     for i in xrange(25):
-        server.sendmail(fromaddr, [toaddr], createMessage(fromaddr, toaddr, "This is from thread %s" % threadId, "Some header" ).as_string())
+        actualFrom = random.choice(fromaddr)
+        server.sendmail(actualFrom, [toaddr], createMessage(actualFrom, toaddr, "This is from thread %s" % threadId, "Some header" ).as_string())
     server.quit()
 
 threads = [threading.Thread(target=sendMails, args=(i,)) for i in range(10)]

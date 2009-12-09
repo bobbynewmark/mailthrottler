@@ -20,9 +20,20 @@
       <div id="left">
 	<h2>Current Stats</h2>
 	<ul>
-	  <li>Currently counting ${currentCount} messages</li>
-	  <li>Seen a total of ${totalCount} messages</li>
+	  <?python
+	    extraCounts = [key for key in counts.keys() if key not in ['total', 'current']]
+	  ?>
+
+	  <li>Currently counting ${counts["current"]} messages</li>
+	  <li>Seen a total of ${counts["total"]} messages</li>
+	  <li py:if="len(extraCounts) > 0">Additional Counts<br/>
+	    <ul>
+
+	      <li py:for="key in extraCounts">${key}:${counts[key]}</li>
+	    </ul>
+	  </li>
 	</ul>
+	
 	<h2>Actions</h2>
 	<ul>
 	  <li>

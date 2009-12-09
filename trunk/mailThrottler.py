@@ -17,7 +17,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         core.loadConfig(sys.argv[1])
     core.loggerSetup()
-    counter = core.BaseMessageCounter()
+    counter = core.QueueMessageCounter()
     delivery = mailServer.LocalDelivery(counter)
     mailPort = _config.getint("Main", "mailPort")
     webPort = _config.getint("Main", "webPort")
