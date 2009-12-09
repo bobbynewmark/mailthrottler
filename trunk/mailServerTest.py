@@ -57,7 +57,7 @@ class BaseMessageTest(unittest.TestCase):
 
     def test_004_canConfigureExcessAmount(self):
         #self.testObj.importConfig({"excessAmount": 5})
-        mailServer._config["excessAmount"] = 5
+        mailServer._config.set("BaseMessageCounter", "excessAmount", "5" )
         for i in xrange(10):
             self.testObj.eomReceived()
 
