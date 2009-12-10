@@ -5,18 +5,12 @@
 The Admin Frontend to the mail server
 """
 #Internal Modules
-from core import RollingMemoryHandler, _config
+from core import RollingMemoryHandler, _config, loader
 #Python BulitIns
-import logging, cgi, os
+import logging, cgi, os, json
 #External Modules
 from twisted.web import server, resource, static
 from genshi.template import TemplateLoader
-
-#Set up template loader
-loader = TemplateLoader(
-    os.path.join(os.path.dirname(__file__), 'templates'), #TODO: Config?
-    auto_reload=True
-)
  
 class AdminPage(resource.Resource):
     isLeaf = 1
@@ -56,16 +50,17 @@ class Ajax(resource.Resource):
         self.log = log
     
     def render_GET(self, request):
-        retval = '{log : ['
-        
-        items = []
+        retval = {"log" : [] }
         for txt, logitem in self.log.currentLog:
-            items.append('{asctime:"%s", name : "%s", levelname: "%s", message: "%s"}' % (logitem.asctime, logitem.name, logitem.levelname, logitem.message) )
-
-        retval += ",".join(items)
-        retval += ']}'
+            retval["log"].append( 
+                { 'asctime' : logitem.asctime, 
+                  'name' : logitem.name, 
+                  'levelname' : logitem.levelname, 
+                  'message': logitem.message 
+                  }
+                )   
         
-        return retval #'{log : [ {asctime:"abc", name : "def", levelname: "ghi", message: "jkl"} ]}'
+        return json.dumps(retval)
 
 def createSite(counter):
     log = RollingMemoryHandler()

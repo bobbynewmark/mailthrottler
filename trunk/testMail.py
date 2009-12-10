@@ -4,7 +4,8 @@ from email.mime.text import MIMEText
 
 fromaddr = sys.argv[1].split(",")
 toaddr = sys.argv[2]
-
+mailsToSend = 20
+threadCount = 10
 
 def createMessage(fromaddr, toaddr, subject, msgtxt):
     msg = MIMEText(msgtxt)
@@ -15,12 +16,12 @@ def createMessage(fromaddr, toaddr, subject, msgtxt):
 
 def sendMails(threadId):
     server = smtplib.SMTP('localhost', 8001)
-    for i in xrange(25):
+    for i in xrange(mailsToSend):
         actualFrom = random.choice(fromaddr)
         server.sendmail(actualFrom, [toaddr], createMessage(actualFrom, toaddr, "This is from thread %s" % threadId, "Some header" ).as_string())
     server.quit()
 
-threads = [threading.Thread(target=sendMails, args=(i,)) for i in range(10)]
+threads = [threading.Thread(target=sendMails, args=(i,)) for i in range(threadCount)]
 
 for t in threads:
     t.start()
