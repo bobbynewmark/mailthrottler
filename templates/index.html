@@ -30,7 +30,7 @@
 	  <li py:if="len(extraCounts) > 0">Additional Counts<br/>
 	    <ul>
 
-	      <li py:for="key in extraCounts">${key}:${counts[key]}</li>
+	      <li py:for="key in extraCounts">${key}:${counts[key]["current"]},${counts[key]["total"]}</li>
 	    </ul>
 	  </li>
 	</ul>
@@ -71,7 +71,7 @@
           success: function (data) 
                    {
                    $("#logbox").val("")
-                   for (i = data.log.length-1; i > 0 ;i--)
+                   for (i = data.log.length-1; i > -1 ;i--)
                      {
                      logitem = data.log[i];
                      var line = logitem.asctime + " - " + logitem.name + " - " + logitem.levelname + " - " + logitem.message + "\n";
@@ -85,7 +85,7 @@
       $(document).ready( function () {
       refreshLog()
       $("#refreshLog").click(refreshLog);
-      setInterval(refreshLog, 10000);
+      setInterval(refreshLog, 50000);
       }
       );
       //]]>

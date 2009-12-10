@@ -5,11 +5,11 @@
 The mail server itself
 """
 #Internal Modules
-from core import _config , BaseMessageCounter, RollingMemoryHandler, loggerSetup
+from core import _config , BaseMessageCounter, RollingMemoryHandler, loggerSetup, createMsgFilePath
 import webServer 
 
 #Python BulitIns
-import os, time, logging, uuid
+import os, time, logging
 from email.Header import Header
 
 #External Modules
@@ -77,15 +77,34 @@ class SaveMessage(BaseMessage):
         BaseMessage.__init__(self,counter)        
 
     def standardProcess(self, d):
-        filepath = os.path.join(_config.get("SaveMessage", "saveFilePath"), str(uuid.uuid4()) + ".msg" )
+        self.writeMsgToDisk()
+        d.callback("File Saved")
+
+    def writeMsgToDisk(self):
+        filepath = createMsgFilePath()
         f = open(filepath, "w")
-        f.write( "\n".join(self.lines) )
+        f.write( self.assembleMsg()  )
         f.close()
         self.logger.info("Saved Message as %s" , filepath)
-        d.callback("File Saved")
+    
+    def assembleMsg(self):
+        return "\n".join(self.lines)
 
     def excessProcess(self, d):
         d.callback("File not saved")
+
+class QueuedSaveMessage(SaveMessage):
+    
+    def __init__(self, counter):
+        SaveMessage.__init__(self,counter)
+
+    def standardProcess(self, d):
+        try:
+            self.counter.saveMsgLater(self, self.createFilePath(), self.assembleMsg())
+            d.callback("Msg Queued")
+        except AttributeError:
+            self.logger.error("Counter for QueuedSaveMessage does not have a saveMsgLater function")
+            SaveMessage.standardProcess(self,d)       
 
 class LocalDelivery(object): 
     implements(smtp.IMessageDelivery)
@@ -110,7 +129,7 @@ class LocalDelivery(object):
 
     def validateTo(self, user):
         self.logger.debug("validateTo: %s", user)
-        return lambda: SaveMessage(self.counter)
+        return lambda: QueuedSaveMessage(self.counter)
 
     def validateFrom(self, helo, orginAddress):
         self.logger.debug("validateFrom: helo:%s orginAddress:%s", helo, orginAddress)
