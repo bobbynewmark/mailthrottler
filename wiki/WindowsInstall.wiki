@@ -9,6 +9,7 @@ Basic install instructions for a windows box
 
 Current install instructions:
   # Install python 2.6 
-  # Install easy_install (this is for ease of use ad not required)
+  # Install [http://pypi.python.org/pypi/setuptool easy_install] - this is for ease of use and is not required
   # Install genshi using easy_install
-  # Install Twisted 
+  # Install Twisted - for windows you need to download the exe and install that way
+  # Copy the source code to a directory and run it
