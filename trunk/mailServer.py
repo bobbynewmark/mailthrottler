@@ -70,7 +70,7 @@ class PrintMessage(BaseMessage):
 
 class SaveMessage(BaseMessage):
 
-    defaultValues = {"saveFilePath": "maildrop" }
+    defaultValues = { }
     _config.importDefaults("SaveMessage", defaultValues)
 
     def __init__(self, counter):
@@ -100,7 +100,7 @@ class QueuedSaveMessage(SaveMessage):
 
     def standardProcess(self, d):
         try:
-            self.counter.saveMsgLater(self, self.createFilePath(), self.assembleMsg())
+            self.counter.saveMsgLater(self, createMsgFilePath(), self.assembleMsg())
             d.callback("Msg Queued")
         except AttributeError:
             self.logger.error("Counter for QueuedSaveMessage does not have a saveMsgLater function")
