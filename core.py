@@ -121,9 +121,7 @@ class QueueMessageCounter(BaseMessageCounter):
     def sendMailQueue(self, fromaddr):
         while len(self.mailQueues[fromaddr]) > 0:
             filepath, msgContent = self.mailQueues[fromaddr].pop()
-            f = open(filepath, "w")
-            f.write(msgContent)
-            f.close()
+            self.writeMsgToDisk(filepath, msgContent)
             self.logger.info("Saved Message as %s" , filepath)
 
     def clearMailQueue(self, fromaddr):
@@ -132,23 +130,35 @@ class QueueMessageCounter(BaseMessageCounter):
             self.logger.info("Cleared Message instead of saving %s" , filepath)
 
     def sendExcessEmail(self, excessQueues):
+        emailSent = False
         if len(excessQueues) > 0:
             self.logger.info("In excess state")
             timeSinceLastEmail = datetime.today() - self.lastExcessEmailSent
             if timeSinceLastEmail > timedelta(seconds=_config.getint("QueueMessageCounter", "sendExcessEmailMinTimeDelta_s")):
-                tmpl = loader.load('excessMsg.txt', cls=NewTextTemplate)
                 fromaddr = _config.get("QueueMessageCounter", "excessMailFrom")
                 toaddr = _config.get("QueueMessageCounter", "excessMailTo")
-                stream = tmpl.generate(mailQueues=self.mailQueues, excessQueues=excessQueues, fromaddr=fromaddr, toaddr=toaddr, counts=self.getCounts())
-                msgContent = stream.render("text")
+                msgContent = self.createExcessEmail(fromadd, toadd, excessQueues)
                 filepath = createMsgFilePath()
-                f = open(filepath, "w")
-                f.write(msgContent)
-                f.close()
+                self.writeMsgToDisk(filepath, msgContent)
                 self.logger.info("Saved ExcessEmail as %s" , filepath)
                 self.lastExcessEmailSent = datetime.today()
+                emailSent = True
             else:
                 self.logger.info("Did not send ExcessEmail as last one was sent %s ago", timeSinceLastEmail)
+        else:
+            self.logger.debug("No need to send ExcessEmail as there are no excess queues")
+        return emailSent
+
+    def createExcessEmail(self, fromadd, toadd, excessQueues):
+        tmpl = loader.load('excessMsg.txt', cls=NewTextTemplate)
+        stream = tmpl.generate(mailQueues=self.mailQueues, excessQueues=excessQueues, fromaddr=fromaddr, toaddr=toaddr, counts=self.getCounts())
+        return stream.render("text")
+
+
+    def writeMsgToDisk(self, filepath, msgContent):
+         f = open(filepath, "w")
+         f.write(msgContent)
+         f.close()
 
     
 class RollingMemoryHandler(logging.Handler):
@@ -170,6 +180,12 @@ class RollingMemoryHandler(logging.Handler):
     def setLevel(self, lvl):
         logging.Handler.setLevel(self, lvl)
         self.currentLog = [record for record in self.currentLog if record[1].levelno >= lvl]
+
+    def addSelfToLogging(self, initalLevel):
+        self.setLevel(initalLevel)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        self.setFormatter(formatter)
+        logging.getLogger("").addHandler(self)
 
 def createMsgFilePath():
     return os.path.join(_config.get("Core", "saveFilePath"), str(uuid.uuid4()) + ".msg" )
