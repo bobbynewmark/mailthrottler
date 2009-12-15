@@ -152,7 +152,7 @@ class QueueMessageCounter(BaseMessageCounter):
         timeSinceLastEmail = datetime.today() - self.lastExcessEmailSent
         return timeSinceLastEmail > timedelta(seconds=_config.getint("QueueMessageCounter", "sendExcessEmailMinTimeDelta_s"))
 
-    def createExcessEmail(self, fromadd, toadd, excessQueues):
+    def createExcessEmail(self, fromaddr, toaddr, excessQueues):
         tmpl = loader.load('excessMsg.txt', cls=NewTextTemplate)
         stream = tmpl.generate(mailQueues=self.mailQueues, excessQueues=excessQueues, fromaddr=fromaddr, toaddr=toaddr, counts=self.getCounts())
         return stream.render("text")
