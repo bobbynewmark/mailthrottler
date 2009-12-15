@@ -161,6 +161,8 @@ class QueueMessageCounterTest(unittest.TestCase):
         def __init__(self, myFrom):
             self.FROM = myFrom
 
+    
+
     def setUp(self):
         pass
     
@@ -302,11 +304,72 @@ class QueueMessageCounterTest(unittest.TestCase):
         emailSent = c.sendExcessEmail([])
         self.assertFalse(emailSent, "An emtpy excess queue should not send an email")
         self.assertEqual(c.lastExcessEmailSent, lastSent, "lastExcessEmailSent should not change when an email is not sent")
-                
+    
+    def test_sendExcessEmailWithExcess(self):
+        c = core.QueueMessageCounter()
+        c.createExcessEmail = lambda *args: "Test Msg"
+        global count
+        count = 0
 
+        def fakeWriteMsgToDisk(a, b):
+            global count
+            if b == "Test Msg":
+                count += 1
+
+        c.writeMsgToDisk = fakeWriteMsgToDisk
+        lastSent = c.lastExcessEmailSent
+        emailSent = c.sendExcessEmail(["a@b.com"])
+        self.assertTrue(emailSent, "An excess queue should send an email")
+        self.assertEqual(count , 1, "WriteMsgToDisk should be called")
+        self.assertTrue(c.lastExcessEmailSent != lastSent, "lastExcessEmailSent should change when an email is sent")
+    
+    def test_sendExcessEmailWithExcessButSentOneInLastMinTimeDelta(self):
+        c = core.QueueMessageCounter()
+        def raiseException(*args):
+            raise Exception("function should not be called")
+        c.createExcessEmail = raiseException
+        c.writeMsgToDisk = raiseException
+        c.notWithinExcessEmailTimeDelta = lambda *args: False
+        lastSent = c.lastExcessEmailSent
+        emailSent = c.sendExcessEmail(["a@b.com"])
+        self.assertFalse(emailSent, "An emtpy excess queue should not send an email")
+        self.assertEqual(c.lastExcessEmailSent, lastSent, "lastExcessEmailSent should not change when an email is not sent")
+
+    def test_notWithinExcessEmailTimeDelta(self):
+        #override datetime.today()
+        oldclass = datetime.datetime
+
+        class fakedatetime (datetime.datetime):
+            
+            @staticmethod
+            def today():
+                return datetime.datetime(2009, 10, 2, 13, 13, 0)
+
+        core.datetime = fakedatetime
+        c = core.QueueMessageCounter()
+        val1 = c.notWithinExcessEmailTimeDelta() 
+        timedelta = int(core.QueueMessageCounter.defaultValues["sendExcessEmailMinTimeDelta_s"])
+        c.lastExcessEmailSent = datetime.datetime(2009, 10, 2, 13, 13, 0) 
+        val2 = c.notWithinExcessEmailTimeDelta() 
+        c.lastExcessEmailSent = datetime.datetime(2009, 10, 2, 13, 13, 0) - datetime.timedelta(seconds=(timedelta/2))
+        val3 = c.notWithinExcessEmailTimeDelta() 
+        c.lastExcessEmailSent = datetime.datetime(2009, 10, 2, 13, 13, 0) - datetime.timedelta(seconds=(timedelta))
+        val4 = c.notWithinExcessEmailTimeDelta() 
+        c.lastExcessEmailSent = datetime.datetime(2009, 10, 2, 13, 13, 0) - datetime.timedelta(seconds=(timedelta+1))
+        val5 = c.notWithinExcessEmailTimeDelta() 
+        
+        
+        #restore datetime.today()
+        core.datetime = oldclass       
+
+        self.assertTrue( val1 , "A new object should always return true" )
+        self.assertFalse( val2 , "If lastExcessEmailSent == today should return false" )
+        self.assertFalse( val3 , "If lastExcessEmailSent - today = 30s  should return false" )
+        self.assertFalse( val4 , "If lastExcessEmailSent - today = 60s should return false" )
+        self.assertTrue( val5 , "If lastExcessEmailSent - today = 61s should return true" )
+        
 
 def main():
-    #Add the startracker package to the path
     unittest.main()
 
 if __name__ == "__main__":

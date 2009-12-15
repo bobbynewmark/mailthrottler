@@ -77,7 +77,6 @@ class BaseMessageTest(unittest.TestCase):
 
 
 def main():
-    #Add the startracker package to the path
     unittest.main()
 
 if __name__ == "__main__":

@@ -132,28 +132,30 @@ class QueueMessageCounter(BaseMessageCounter):
     def sendExcessEmail(self, excessQueues):
         emailSent = False
         if len(excessQueues) > 0:
-            self.logger.info("In excess state")
-            timeSinceLastEmail = datetime.today() - self.lastExcessEmailSent
-            if timeSinceLastEmail > timedelta(seconds=_config.getint("QueueMessageCounter", "sendExcessEmailMinTimeDelta_s")):
+            self.logger.info("In excess state")            
+            if self.notWithinExcessEmailTimeDelta():
                 fromaddr = _config.get("QueueMessageCounter", "excessMailFrom")
                 toaddr = _config.get("QueueMessageCounter", "excessMailTo")
-                msgContent = self.createExcessEmail(fromadd, toadd, excessQueues)
+                msgContent = self.createExcessEmail(fromaddr, toaddr, excessQueues)
                 filepath = createMsgFilePath()
                 self.writeMsgToDisk(filepath, msgContent)
                 self.logger.info("Saved ExcessEmail as %s" , filepath)
                 self.lastExcessEmailSent = datetime.today()
                 emailSent = True
             else:
-                self.logger.info("Did not send ExcessEmail as last one was sent %s ago", timeSinceLastEmail)
+                self.logger.info("Did not send ExcessEmail as last one was sent %s ago", datetime.today() - self.lastExcessEmailSent)
         else:
             self.logger.debug("No need to send ExcessEmail as there are no excess queues")
         return emailSent
+
+    def notWithinExcessEmailTimeDelta(self):
+        timeSinceLastEmail = datetime.today() - self.lastExcessEmailSent
+        return timeSinceLastEmail > timedelta(seconds=_config.getint("QueueMessageCounter", "sendExcessEmailMinTimeDelta_s"))
 
     def createExcessEmail(self, fromadd, toadd, excessQueues):
         tmpl = loader.load('excessMsg.txt', cls=NewTextTemplate)
         stream = tmpl.generate(mailQueues=self.mailQueues, excessQueues=excessQueues, fromaddr=fromaddr, toaddr=toaddr, counts=self.getCounts())
         return stream.render("text")
-
 
     def writeMsgToDisk(self, filepath, msgContent):
          f = open(filepath, "w")
