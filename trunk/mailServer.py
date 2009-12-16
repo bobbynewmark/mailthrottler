@@ -135,6 +135,12 @@ class LocalDelivery(object):
         self.logger.debug("validateFrom: helo:%s orginAddress:%s", helo, orginAddress)
         return orginAddress
 
+    def resetClearCall(self):
+        self.logger.info("resetting Clear Count")
+        self.clearCall.stop()
+        self.counter.clearCount()
+        self.clearCall.start(_config.getfloat("LocalDelivery","clearAfter"))
+
 class SMTPFactory(protocol.ServerFactory):
 
     def __init__(self, delivery):
