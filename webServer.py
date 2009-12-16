@@ -62,7 +62,19 @@ class Ajax(resource.Resource):
         
         return json.dumps(retval)
 
-def createSite(counter):
+class ForceClear(resource.Resource):
+    isLeaf = 1
+
+    def __init__(self, delivery):
+        resource.Resource.__init__(self)
+        self.delivery = delivery
+    
+    def render_GET(self, request):
+        self.delivery.resetClearCall()
+        return "OK"
+
+def createSite(delivery):
+    counter = delivery.counter
     log = RollingMemoryHandler()
     log.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -72,6 +84,7 @@ def createSite(counter):
     root.putChild('', AdminPage(counter, log))
     root.putChild('ajax', Ajax(log))
     root.putChild('config', ConfigPage())
+    root.putChild('forceclear', ForceClear(delivery))
     root.putChild('default.css', static.File('templates/default.css'))
     root.putChild('jquery-1.3.2.min.js', static.File('templates/jquery-1.3.2.min.js'))
     return server.Site(root)

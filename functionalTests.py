@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-import smtplib, time, threading, sys, random, datetime, os
+import smtplib, time, threading, sys, random, datetime, os, urllib
 from email.mime.text import MIMEText
 
 maildroplocation = "maildrop"
@@ -35,9 +35,12 @@ def cleanUpMailDrop():
 def checkFileExists(numberToCheckFor=1):
     return len(os.listdir(maildroplocation)) == numberToCheckFor
 
+def forceClear():
+    urllib.urlopen("http://127.0.0.1:8080/forceclear")
+
 
 def test_delayInSend():
-    """Tests that there is a 1 second delay in sending the emails 
+    """Tests that there is a delay in sending the emails 
     """
     msg = createMessage(fromAddr, toAddr, msgSubject, msgBody)
     cleanUpMailDrop()
@@ -82,13 +85,19 @@ def test_sendsExcessEmailWhenMoreThanOverflow():
 def test_sendsExcessEmailWhenMoreThanOverflowForProlongedPeriod():
     """Tests that if we send lots of emails over a large period then it drops them and only sends a excess email
     """
+    
     msg = createMessage(fromAddr, toAddr, msgSubject, msgBody)
     cleanUpMailDrop()
+    begin = datetime.datetime.today()
+    forceClear()
     for i in xrange(9):
         for i in xrange(21):
             sendMail(fromAddr, toAddr, msg)
         time.sleep(1)
     time.sleep(sleepTime)
+    forceClear()
+    end = datetime.datetime.today()
+    #print end - begin    
     if checkFileExists(1):
         print "TEST CASE - OK"
     else:
@@ -109,6 +118,7 @@ def test_sendsExcessEmailWhenMoreThanOverflowWithMultipleFroms():
     else:
         print "TEST CASE - BAD"
     cleanUpMailDrop()
+
 
 
 
