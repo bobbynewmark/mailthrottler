@@ -12,12 +12,6 @@ from datetime import datetime, timedelta
 #External Modules
 from genshi.template import TemplateLoader, NewTextTemplate
 
-#Set up template loader
-loader = TemplateLoader(
-    os.path.join(os.path.dirname(__file__), 'templates'), #TODO: Config?
-    auto_reload=True
-)
-
 class Config(ConfigParser.SafeConfigParser):
 
     def __init__(self):
@@ -33,7 +27,7 @@ class Config(ConfigParser.SafeConfigParser):
 
 _config = Config()
 #Some base config settings
-_config.importDefaults("Core", {"saveFilePath": "maildrop" })
+_config.importDefaults("Core", {"saveFilePath": "maildrop" , "templatePath":"templates"})
 
 class BaseMessageCounter(object):
     """This is the prototype for all Counters
@@ -204,7 +198,10 @@ def loggerSetup():
 
 def loadConfig(filename):
     _config.readfp(open(filename))
-   
 
-
+#Set up template loader
+loader = TemplateLoader(
+    os.path.join(os.path.dirname(__file__), _config.get("Core", "templatePath")),
+    auto_reload=True
+)
 
