@@ -85,7 +85,7 @@ def createSite(delivery):
     root.putChild('ajax', Ajax(log))
     root.putChild('config', ConfigPage())
     root.putChild('forceclear', ForceClear(delivery))
-    root.putChild('default.css', static.File('templates/default.css'))
-    root.putChild('jquery-1.3.2.min.js', static.File('templates/jquery-1.3.2.min.js'))
+    root.putChild('default.css', static.File(os.path.join( _config.get("Core", "templatePath") , "default.css" )))
+    root.putChild('jquery-1.3.2.min.js', static.File(os.path.join( _config.get("Core", "templatePath") , "jquery-1.3.2.min.js" )))
     return server.Site(root)
     

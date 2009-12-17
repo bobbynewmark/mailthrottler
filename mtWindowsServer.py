@@ -7,9 +7,12 @@ Base code for the service is taken from http://code.activestate.com/recipes/5517
 """
 #Internal Modules
 from mailThrottler import MTDaemon
+from core import _config
 #Python BulitIns
 from os.path import splitext, abspath
-from sys import modules, argv, path
+from sys import modules, argv
+import logging
+from logging.handlers import TimedRotatingFileHandler
 #External Modules
 import win32serviceutil
 import win32service
@@ -94,15 +97,25 @@ def instart(cls, name, display_name=None, stay_alive=True):
         print str(x)
 
 class WindowsMT(Service):
+    
+    defaultValues = { "logFilePath": "logfiles/mailthrotter.log", "logBackupCount" : "5" }
+    _config.importDefaults("WindowsMT", defaultValues)
+
+    
     def start(self):
         filepath = ""
-        self.log(path[0])
-        self.log("filepath :'%s'" % filepath)
+        filepath = splitext(modules[MTDaemon.__module__].__file__)[0] + ".ini"
         self.daemon = MTDaemon(filepath)
+        #Attach rolling file logger
+        log = TimedRotatingFileHandler( _config.get("WindowsMT", "logFilePath") , when='midnight', backupCount=_config.getint("WindowsMT", "logBackupCount"))
+        log.setLevel(logging.INFO)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        log.setFormatter(formatter)
+        logging.getLogger("").addHandler(log)
         self.daemon.start()
 
     def stop(self):
         self.daemon.stop()
         del(self.daemon)
 
-#instart(WindowsMT, 'MailThrotter', 'MailThrotter python service')
+instart(WindowsMT, 'MailThrotter', 'MailThrotter python service')
