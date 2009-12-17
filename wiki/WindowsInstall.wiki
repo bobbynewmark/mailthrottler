@@ -9,8 +9,8 @@ Basic install instructions for a windows box
 
 Current install instructions:
   # Install python 2.6 
-  ## Download python-2.6.4.msi 
-  ## Run installer.  Choose to install to c:\python\26
+    # Download python-2.6.4.msi 
+    # Run installer.  Choose to install to c:\python\26
   # Install genshi using easy_install
   # Install Twisted - for windows you need to download the exe and install that way
   # Copy the source code to a directory and run it
