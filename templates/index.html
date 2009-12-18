@@ -13,47 +13,42 @@
     </div>
     <div id="menu">
       <ul>
-	<li><a href="/">Home</a></li>
-	<li><a href="#">Contact Us</a></li>
+        <li><a href="/">Home</a></li>
+        <li><a href="#">Contact Us</a></li>
       </ul>
     </div>
     <div id="content">
       <div>
-	<h2>Current Stats</h2>
-	<ul>
-	  <?python
-	    extraCounts = [key for key in counts.keys() if key not in ['total', 'current']]
-	  ?>
+        <h2>Current Stats</h2>
+        <a id="refreshLog" href="#">Refresh</a> 
+        <ul>
+          <li>Currently counting <span id="currentCount">0</span> messages</li>
+          <li>Seen a total of <span id="totalCount">0</span> messages</li>
+          <li id="additionalCounts">Additional Counts<br/>
+          <ul><li>Calculating ...</li></ul>
+          </li>
 
-	  <li>Currently counting ${counts["current"]} messages</li>
-	  <li>Seen a total of ${counts["total"]} messages</li>
-	  <li py:if="len(extraCounts) > 0">Additional Counts<br/>
-	    <ul>
-
-	      <li py:for="key in extraCounts">${key}:${counts[key]["current"]},${counts[key]["total"]}</li>
-	    </ul>
-	  </li>
-	</ul>
-	
-	<h2>Actions</h2>
-	<ul>
-	  <li>
-	    <form action="/" method="post">
-	      <div>Change Logging level to: 
-	      <select name="logLevel">
-		<option>DEBUG</option>
-		<option>INFO</option>
-	      </select>
-	      <input type="submit" value="Change" />
-	      </div>
-	    </form>
-	  </li>
-	  <li><a href="/config">View Current Config</a></li>
-	</ul>
-	<h2>Current Log - ${currentLevel}</h2>
-	<a id="refreshLog" href="#">Refresh</a>
-	<textarea id="logbox" readonly="readonly" ></textarea>
-	</div>
+          <span id="extraCounts"></span>
+        </ul>   
+        <h2>Actions</h2>
+        <ul>
+          <li>
+            <form action="/" method="post">
+              <div>Change Logging level to: 
+              <select name="logLevel">
+                <option>DEBUG</option>
+                <option>INFO</option>
+              </select>
+              <input type="submit" value="Change" />
+              </div>
+            </form>
+          </li>
+          <li><a href="/config">View Current Config</a></li>
+        </ul>
+        <h2>Current Log - ${currentLevel}</h2>
+        <a id="refreshLog" href="#">Refresh</a>
+        <textarea id="logbox" readonly="readonly" ></textarea>
+        </div>
     </div>
     <div id="footer">
       <p>Copyright &copy; 2009 Andrew Cox. Designed by <a href="http://www.freecsstemplates.org" class="link1">Free CSS Templates</a></p>
@@ -64,28 +59,62 @@
       function refreshLog()
       {
       //Make AJAX call here
-      $.ajax(
+        $.ajax(
         { type:"GET",
-          url:"ajax?log",
+          url:"ajax?action=log",
           dataType:"json",
           success: function (data) 
                    {
-                   $("#logbox").val("")
+                   $("#logbox").val("")            
                    for (i = data.log.length-1; i > -1 ;i--)
                      {
                      logitem = data.log[i];
                      var line = logitem.asctime + " - " + logitem.name + " - " + logitem.levelname + " - " + logitem.message + "\n";
-                     $("#logbox").val(line + $("#logbox").val() );
+                     $("#logbox").val(line + $("#logbox").val());
                      }
                    }
         }
-      )
+        )
+      }
+
+      function refreshCounts()
+      {
+      //Make AJAX call here
+        $.ajax(
+        { type:"GET",
+          url:"ajax?action=counts",
+          dataType:"json",
+          success: function (data) 
+                   {
+                   var showAdditional = false
+                   $("#additionalCounts ul").empty()
+                   $("#extraCounts").text("")
+                   for ( var key in data.counts )
+                     {
+                     if (key == "current")
+                       { $("#currentCount").text( data.counts.current ); }
+                     else if (key == "total")
+                       { $("#totalCount").text( data.counts.total ); }
+                     else 
+                       {
+                       var info = key + ": " + data.counts[key].current.toString() + "," + data.counts[key].total.toString();
+                       $("#additionalCounts ul").append( "<li>" + info + "</li>" );
+                       showAdditional = true;
+                       }
+                     }               
+                   $("#additionalCounts").toggle(showAdditional);
+                   }
+        }
+        )
       }
 
       $(document).ready( function () {
       refreshLog()
+      refreshCounts()
       $("#refreshLog").click(refreshLog);
+      $("#refreshCounts").click(refreshCounts);
       setInterval(refreshLog, 50000);
+      setInterval(refreshCounts, 500);
       }
       );
       //]]>

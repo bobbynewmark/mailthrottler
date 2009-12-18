@@ -45,11 +45,24 @@ class ConfigPage(resource.Resource):
 class Ajax(resource.Resource):
     isLeaf = 1
 
-    def __init__(self, log):
+    def __init__(self, counter, log):
         resource.Resource.__init__(self)
+        self.counter = counter
         self.log = log
     
-    def render_GET(self, request):
+    def render_GET(self, request):        
+        retval = {}
+        #get value from query string
+        if "action" in request.args:
+            #print request.args
+            if request.args["action"][0] == "log":
+                retval = self.createLogObject()
+            elif request.args["action"][0] == "counts":
+                retval = self.createCountsObject() 
+        
+        return json.dumps(retval)
+
+    def createLogObject(self):
         retval = {"log" : [] }
         for txt, logitem in self.log.currentLog:
             retval["log"].append( 
@@ -59,8 +72,13 @@ class Ajax(resource.Resource):
                   'message': logitem.message 
                   }
                 )   
-        
-        return json.dumps(retval)
+        return retval
+
+    def createCountsObject(self):
+        counts = self.counter.getCounts()
+        retval = { "counts" : counts }
+        return retval
+
 
 class ForceClear(resource.Resource):
     isLeaf = 1
@@ -82,7 +100,7 @@ def createSite(delivery):
     logging.getLogger("").addHandler(log)
     root = resource.Resource()
     root.putChild('', AdminPage(counter, log))
-    root.putChild('ajax', Ajax(log))
+    root.putChild('ajax', Ajax(counter, log))
     root.putChild('config', ConfigPage())
     root.putChild('forceclear', ForceClear(delivery))
     root.putChild('default.css', static.File(os.path.join( _config.get("Core", "templatePath") , "default.css" )))
