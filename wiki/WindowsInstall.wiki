@@ -3,8 +3,9 @@
 
 = Introduction =
 
-Basic install instructions for a windows box
+Basic install instructions for a windows box 
 
+Last followed 18/12/09
 
 = Details =
 
@@ -17,5 +18,8 @@ Current install instructions:
     # Run installer.
   # Install Twisted 
     # Download Twisted-9.0.0.win32-py2.6.exe
+    # Run installer
+  # Install Win32 extensions
+    # Download pywin32-214.win32-py2.6.exe
     # Run installer
   # Copy the source code to a directory and run it
