@@ -20,7 +20,7 @@
     <div id="content">
       <div>
         <h2>Current Stats</h2>
-        <a id="refreshLog" href="#">Refresh</a> 
+        <a id="refreshCounts" href="#">Refresh</a> 
         <ul>
           <li>Currently counting <span id="currentCount">0</span> messages</li>
           <li>Seen a total of <span id="totalCount">0</span> messages</li>
@@ -44,6 +44,7 @@
             </form>
           </li>
           <li><a href="/config">View Current Config</a></li>
+          <li><a href="#" id="clearQueuesLink">Force Clear the Queues</a><span id="clearQueuesMsg"></span></li>
         </ul>
         <h2>Current Log - ${currentLevel}</h2>
         <a id="refreshLog" href="#">Refresh</a>
@@ -75,6 +76,25 @@
                    }
         }
         )
+      }
+
+      function clearQueues()
+      {
+      $("#clearQueuesMsg").hide()
+         $.ajax(
+        { type:"GET",
+          url:"forceclear",
+          dataType:"text",
+          success: function (data)
+                   {
+                   $("#clearQueuesMsg").text("Queues Cleared").fadeIn(1000, 
+                      function ( )
+                      {
+                      $("#clearQueuesMsg").fadeOut(1000);
+                      }
+                    );             
+                   }
+          });
       }
 
       function refreshCounts()
@@ -113,6 +133,7 @@
       refreshCounts()
       $("#refreshLog").click(refreshLog);
       $("#refreshCounts").click(refreshCounts);
+      $("#clearQueuesLink").click(clearQueues);
       setInterval(refreshLog, 50000);
       setInterval(refreshCounts, 500);
       }

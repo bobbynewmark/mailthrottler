@@ -116,6 +116,11 @@ a:hover {
     width:100%
 }
 
+#clearQueuesMsg
+{
+    margin-left:30px;
+}
+
 /** FOOTER */
 
 #footer {
