@@ -22,4 +22,8 @@ Current install instructions:
   # Install Win32 extensions
     # Download pywin32-214.win32-py2.6.exe
     # Run installer
-  # Copy the source code to a directory and run it
+  # Copy the source code to a directory
+  # Run `mtWindowsServer` to install the service
+  # Configure the service as required
+    # Rememeber the service uses the `mailThrottler.ini` in the same directory as a config file
+  # Run !
