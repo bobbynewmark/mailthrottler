@@ -1,4 +1,10 @@
 #!/usr/local/bin/python
+# Copyright (c) Andrew Cox 2009-10
+# See LICENCE for details
+"""
+Basic tests for the mail server, to be used during development
+"""
+#Python BulitIns
 import smtplib, time, threading, sys, random, datetime
 from email.mime.text import MIMEText
 

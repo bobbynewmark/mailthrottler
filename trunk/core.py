@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Copyright (c) Andrew Cox 2009
+# Copyright (c) Andrew Cox 2009-10
 # See LICENCE for details
 """
 These are common classes and functions to the whole project
