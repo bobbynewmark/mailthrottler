@@ -117,7 +117,8 @@
                        { $("#totalCount").text( data.counts.total ); }
                      else 
                        {
-                       var info = key + ": " + data.counts[key].current.toString() + "," + data.counts[key].total.toString();
+                       var encodedKey = key.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                       var info = encodedKey + ": " + data.counts[key].current.toString() + "," + data.counts[key].total.toString();
                        $("#additionalCounts ul").append( "<li>" + info + "</li>" );
                        showAdditional = true;
                        }
