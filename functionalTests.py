@@ -1,4 +1,10 @@
 #!/usr/local/bin/python
+# Copyright (c) Andrew Cox 2009-10
+# See LICENCE for details
+"""
+Functional tests for the mailserver
+"""
+#Python BulitIns
 import smtplib, time, threading, sys, random, datetime, os, urllib
 from email.mime.text import MIMEText
 

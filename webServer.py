@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# Copyright (c) Andrew Cox 2009
+# Copyright (c) Andrew Cox 2009-10
 # See LICENCE for details
 """
 The Admin Frontend to the mail server
