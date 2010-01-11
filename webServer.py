@@ -8,6 +8,7 @@ The Admin Frontend to the mail server
 from core import RollingMemoryHandler, _config, loader
 #Python BulitIns
 import logging, cgi, os, json
+from datetime import datetime
 #External Modules
 from twisted.web import server, resource, static
 from genshi.template import TemplateLoader
@@ -59,6 +60,8 @@ class Ajax(resource.Resource):
                 retval = self.createLogObject()
             elif request.args["action"][0] == "counts":
                 retval = self.createCountsObject() 
+            elif request.args["action"][0] == "uptime":
+                retval = self.createUptimeObject()
         
         return json.dumps(retval)
 
@@ -77,6 +80,11 @@ class Ajax(resource.Resource):
     def createCountsObject(self):
         counts = self.counter.getCounts()
         retval = { "counts" : counts }
+        return retval
+
+    def createUptimeObject(self):
+        uptime = datetime.utcnow() - self.counter.starttime
+        retval = { "starttime" : self.counter.starttime.strftime("%Y-%m-%d %H:%M:%S") , "uptime_s" : uptime.seconds, "uptime_d": uptime.days }
         return retval
 
 

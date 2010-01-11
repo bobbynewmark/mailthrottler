@@ -20,18 +20,19 @@
     <div id="content">
       <div>
         <h2>Current Stats</h2>
-        <a id="refreshCounts" href="#">Refresh</a> 
+
         <ul>
+	  <li>Server has been up for: <span id="uptime">Updating...</span></li>
           <li>Currently counting <span id="currentCount">0</span> messages</li>
           <li>Seen a total of <span id="totalCount">0</span> messages</li>
           <li id="additionalCounts">Additional Counts<br/>
           <ul><li>Calculating ...</li></ul>
           </li>
-
           <span id="extraCounts"></span>
         </ul>   
         <h2>Actions</h2>
         <ul>
+	  <li> <a id="refreshCounts" href="#">Refresh Counts</a> </li>
           <li>
             <form action="/" method="post">
               <div>Change Logging level to: 
@@ -45,9 +46,10 @@
           </li>
           <li><a href="/config">View Current Config</a></li>
           <li><a href="#" id="clearQueuesLink">Force Clear the Queues</a><span id="clearQueuesMsg"></span></li>
+	  <li><a id="refreshLog" href="#">Refresh Log</a></li>
+	  <li><a id="refreshUptime" href="#">Refresh Uptime</a></li>	  
         </ul>
         <h2>Current Log - ${currentLevel}</h2>
-        <a id="refreshLog" href="#">Refresh</a>
         <textarea id="logbox" readonly="readonly" ></textarea>
         </div>
     </div>
@@ -129,14 +131,37 @@
         )
       }
 
+      function refreshUptime()
+      {
+        $.ajax(
+        { type:"GET",
+          url:"ajax?action=uptime",
+          dataType:"json",
+          success: function (data) 
+                   {
+		   var d = data.uptime_d; //Whole days;
+		   var h = Math.floor(data.uptime_s / 3600); //Turn seconds into whole hours
+		   var s = data.uptime_s % 3600; //Take the left over
+		   var m = Math.floor(s / 60); //Turn left over seconds into whole minutes
+		   s = (s - (m*60)) % 60; //Take the left over
+		   var outText = d + " days " + h + " hours " + m + " minutes " + s + " seconds";
+		   $("#uptime").text( outText );
+                   }
+        }
+	)
+      }
+
       $(document).ready( function () {
-      refreshLog()
-      refreshCounts()
+      refreshLog();
+      refreshCounts();
+      refreshUptime();
+      $("#refreshUptime").click(refreshUptime);
       $("#refreshLog").click(refreshLog);
       $("#refreshCounts").click(refreshCounts);
       $("#clearQueuesLink").click(clearQueues);
       setInterval(refreshLog, 50000);
       setInterval(refreshCounts, 500);
+      setInterval(refreshUptime, 50000);
       }
       );
       //]]>

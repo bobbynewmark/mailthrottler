@@ -41,6 +41,7 @@ class BaseMessageCounter(object):
         self.logger = logging.getLogger("BaseMessageCounter")
         self.count = 0
         self.totalCount = 0  
+        self.starttime = datetime.utcnow()
 
     def incrementCount(self, message):
         self.count += 1
