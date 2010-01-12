@@ -1,0 +1,15 @@
+From: ${fromaddr}
+To: ${toaddr}
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: URGENT: ${len(excessQueues)} queues are currently in flood
+
+I have detected an excess of mail in the following queues:
+{% for item in excessQueues %}* ${item} with ${counts[item]["current"]} in queue
+{% end %}
+
+Sample Mail from Queues:
+{% for item in excessQueues %}======= ${item} =======
+${'\t'}${mailQueues[item][0][1].replace("\n", "\n\t")}
+{% end %}
