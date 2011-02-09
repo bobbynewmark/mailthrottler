@@ -89,7 +89,7 @@ class QueueMessageCounter(BaseMessageCounter):
             self.logger.debug( "Clearing count for queue %s (totalCount:%s)" , fromaddr , self.queuetotals[fromaddr] )
             if self.queues[fromaddr] < _config.getint("BaseMessageCounter", "excessAmount"):
                 self.sendMailQueue(fromaddr)
-                self.queues[fromaddr] = 0
+                self.queues[fromaddr] = len(self.mailQueues[fromaddr])
             else:
                 excessQueues.append(fromaddr)
 
@@ -114,10 +114,16 @@ class QueueMessageCounter(BaseMessageCounter):
         self.mailQueues[message.FROM].append( (filepath, msgContent) )
 
     def sendMailQueue(self, fromaddr):
+        errors = []
         while len(self.mailQueues[fromaddr]) > 0:
             filepath, msgContent = self.mailQueues[fromaddr].pop()
-            self.writeMsgToDisk(filepath, msgContent)
-            self.logger.info("Saved Message as %s" , filepath)
+            try:
+                self.writeMsgToDisk(filepath, msgContent)
+                self.logger.info("Saved Message as %s" , filepath)
+            except IOError:
+                self.logger.error("Failed to save Message as %s" , filepath)
+                errors.append((filepath, msgContent))
+        self.mailQueues[fromaddr].extend(errors) #push the errors back onto the queue
 
     def clearMailQueue(self, fromaddr):
         while len(self.mailQueues[fromaddr]) > 0:
@@ -133,10 +139,13 @@ class QueueMessageCounter(BaseMessageCounter):
                 toaddr = _config.get("QueueMessageCounter", "excessMailTo")
                 msgContent = self.createExcessEmail(fromaddr, toaddr, excessQueues)
                 filepath = createMsgFilePath()
-                self.writeMsgToDisk(filepath, msgContent)
-                self.logger.info("Saved ExcessEmail as %s" , filepath)
-                self.lastExcessEmailSent = datetime.today()
-                emailSent = True
+                try:
+                    self.writeMsgToDisk(filepath, msgContent)
+                    self.logger.info("Saved ExcessEmail as %s" , filepath)
+                    self.lastExcessEmailSent = datetime.today()
+                    emailSent = True
+                except IOError:
+                    self.logger.error("Failed to save ExcessEmail as %s" , filepath) 
             else:
                 self.logger.info("Did not send ExcessEmail as last one was sent %s ago", datetime.today() - self.lastExcessEmailSent)
         else:
