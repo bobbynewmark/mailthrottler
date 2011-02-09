@@ -1,0 +1,48 @@
+# Copyright (c) Andrew Cox 2009-10
+# See LICENCE for details
+
+* Mail Server Technical Spec
+** Problem
+  When the database goes down, or another catastrophic failure occurs we get a flood of error emails that can bring down the Exchange server that they are communicating with. 
+  As the applications that send the emails are not aware of each other and use standard SMTP to send emails there is no way currently of having them not flood the email when an event happens. 
+  The applications that send emails are also either web applications or windows services. 
+  While the web applications work on a "as hit" basis the windows services work on a "polling" basis, which means they will have different profiles of flooding. 
+  It should also be noted that some of the emails must be sent to alert the support team of the event.
+** Idea
+   Having a service that maintains the state across all the applications, and then sends the email based upon the result of that state.
+   This would require us to construct a new service that would be able to be communicated with from all the applications.
+   This service could not be backed by the database (a common source of flood emails).
+   Also the error code should not have blocking code to communicate with this service.
+   Communication between the service and the application domain, might as well be done by SMTP as this is already baked into the code and would require no changes to base code.
+   This option does not stop the flood within the application itself as it will still have to communicate the same amount of data to the server
+   This could aggregate over all the applications that send emails, this would allow that the service to only send one email for several application if they were all reporting the same error. 
+** Technical Design
+*** Business Rules
+**** Break queues down by
+***** FROM
+**** Delay emails by 1 second
+***** If emails have not reached overflow amount in that second then send them, otherwise do overflow actions
+**** Over flow occurs at
+***** 10 mails per second into each queue (configurable)
+**** When overflow occurs
+***** Drop emails entering the queue
+***** Send Flood email (configurable) (add attached email)
+***** Continue sending Flood emails every minute untill flood ended.
+***** Send one flood email per server, rather than one per queue
+*** Mail Server
+**** Basic Twisted SMTP Server
+**** Hold the queues in dictionaries (held only in memory)
+**** Send email by placing it into a drop folder, that will be picked up by another MTA
+**** Log all events
+**** Common email for all flood situations
+**** Configured by file
+*** Admin Console - Web Server
+**** Basic Twisted Web Server
+**** Configured by file
+**** Should update the page automaticly.
+**** Should show current stats
+**** Should be able to update configuration, and save / reload config
+
+   
+
+
