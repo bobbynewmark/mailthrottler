@@ -33,13 +33,22 @@ def sendMail(fromaddr, toaddr, msg):
     server = smtplib.SMTP('localhost', 8001)
     server.sendmail(fromaddr, [toaddr], msg.as_string())
     server.quit()
+    print '.',
 
 def cleanUpMailDrop():
-    for fp in os.listdir(maildroplocation):
-        os.remove( os.path.join( maildroplocation, fp ) )
+    try:
+        for fp in os.listdir(maildroplocation):
+            os.remove( os.path.join( maildroplocation, fp ) )
+    except:
+        print "Failed to remove files from maildrop location"
                
 def checkFileExists(numberToCheckFor=1):
-    return len(os.listdir(maildroplocation)) == numberToCheckFor
+    retval = False
+    try:
+        retval = len(os.listdir(maildroplocation)) == numberToCheckFor
+    except:
+        print "Failed to check number in maildrop location"
+    return retval
 
 def forceClear():
     urllib.urlopen("http://127.0.0.1:8080/forceclear")

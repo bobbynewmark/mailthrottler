@@ -82,10 +82,14 @@ class SaveMessage(BaseMessage):
 
     def writeMsgToDisk(self):
         filepath = createMsgFilePath()
-        f = open(filepath, "w")
-        f.write( self.assembleMsg()  )
-        f.close()
-        self.logger.info("Saved Message as %s" , filepath)
+        try:
+            f = open(filepath, "w")
+            f.write( self.assembleMsg()  )
+            f.close()
+            self.logger.info("Saved Message as %s" , filepath)
+        except IOError:
+            #TODO: This is bad.  Should we alert calling code so that it can do something about this?
+            self.logger.error("Failed to save message as %s" , filepath) 
     
     def assembleMsg(self):
         return "\n".join(self.lines)
