@@ -24,13 +24,13 @@ class AdminPage(resource.Resource):
     def render_GET(self, request):
         tmpl = loader.load('index.html')
         stream = tmpl.generate(log=self.log.currentLog, counts=self.counter.getCounts(), currentLevel=logging.getLevelName(self.log.level))
-        return stream.render('html', doctype='html')
+        return stream.render('html', doctype='html').encode('utf-8')
 
     def render_POST(self, request):
         tmpl = loader.load('index.html') 
         self.log.setLevel( getattr(logging, str(request.args["logLevel"][0]).upper()) );
         stream = tmpl.generate(log=self.log.currentLog, counts=self.counter.getCounts(), currentLevel=logging.getLevelName(self.log.level))
-        return stream.render('html', doctype='html')
+        return stream.render('html', doctype='html').encode('utf-8')
 
 class ConfigPage(resource.Resource):
     isLeaf = 1
@@ -41,7 +41,7 @@ class ConfigPage(resource.Resource):
     def render_GET(self, request):
         tmpl = loader.load('config.html')
         stream = tmpl.generate(config=_config)
-        return stream.render('html', doctype='html')
+        return stream.render('html', doctype='html').encode('utf-8')
 
 class Ajax(resource.Resource):
     isLeaf = 1
