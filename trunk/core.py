@@ -23,7 +23,9 @@ class Config(ConfigParser.SafeConfigParser):
             if not self.has_section(sectionName):
                 self.add_section(sectionName)
             if not self.has_option(sectionName, key):
-                self.set( sectionName, key , configDefaults[key] )
+                #Check enviroment for vars
+                default = os.environ.get(".".join((sectionName,key)),configDefaults[key]) 
+                self.set( sectionName, key , default)
 
 _config = Config()
 #Some base config settings
