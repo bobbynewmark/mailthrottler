@@ -20,7 +20,7 @@
 
 *ssh to instance*
     
-	ssh -i \users\acox.SSG\Downloads\echoserver.pem ec2-user@ec2-54-227-32-37.compute-1.amazonaws.com
+	ssh -i %HOME%\Downloads\echoserver.pem ec2-user@ec2-54-227-32-37.compute-1.amazonaws.com
 
 *run to get packages installed*
     
