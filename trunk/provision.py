@@ -71,15 +71,12 @@ def launch_instance(conn):
 
 #assume that you have .boto config setup
 print "Connecting to EC2 region:", region
-#conn = boto.ec2.connect_to_region(region)
-#launch_success , myinstance = launch_instance(conn)
-#if not launch_success:
-#    exit(0)
-#public_ip = myinstance.ip_address
-#public_dns = myinstance.public_dns_name
-
-public_ip = "107.20.26.254"
-public_dns = "ec2-107-20-26-254.compute-1.amazonaws.com"
+conn = boto.ec2.connect_to_region(region)
+launch_success , myinstance = launch_instance(conn)
+if not launch_success:
+    exit(0)
+public_ip = myinstance.ip_address
+public_dns = myinstance.public_dns_name
 
 print "public ip:", public_ip
 print "public dns:", public_dns
@@ -96,7 +93,8 @@ sudo("python27 -m easy_install pip")
 sudo("python27 -m pip install twisted")
 sudo("python27 -m pip install genshi")
 run("svn checkout http://mailthrottler.googlecode.com/svn/trunk/ mailthrottler-read-only")
-run("nohup python27 ~/mailthrottler-read-only/mailThrottler.py")
+with cd("~/mailthrottler-read-only"):
+    run("twistd -o -y mailThrottler.tac")
 fabric.network.disconnect_all()
 
 
