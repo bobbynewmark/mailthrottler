@@ -1,0 +1,3 @@
+Genshi==0.7
+Twisted==13.1.0
+
